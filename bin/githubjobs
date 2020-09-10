@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'rest-client'
+require 'json'
+require 'pry'
+require "nokogiri"
+
+require_relative '../lib/api'
+require_relative '../lib/position'
+require_relative '../lib/cli'
+require_relative '../lib/cart'
+
+CLI.new.run
