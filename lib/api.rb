@@ -1,10 +1,4 @@
 class API
-    # def self.positions
-    #     resp = RestClient.get("https://jobs.github.com/positions.json")
-    #     positions_hash = JSON.parse(resp.body, symbolize_names:true)
-    #     positions_hash.collect { |position| Position.new(position) }
-    # end
-
     def self.positions_description(position)
         resp = RestClient.get("https://jobs.github.com/positions.json?search=" + position)
         pos_hash = JSON.parse(resp.body, symbolize_names:true)
