@@ -1,148 +1,202 @@
 class CLI
+        $select_job = 0
+        $location_selected = 'nowhere'
+        $description_selected = "none"
+        $languages = ["Javascript", "Node", "Ruby", "Python", "Java"]
+        $locations = ["North America", "South America", "Europe", "Africa", "Asia", "Australia"]
+        $list = 'no'
+ 
     
-    def run
-        puts "Welcome to the Job Database!"
-        puts "There are so many positons and can be a bit overwhelming, how about we narrow it down!"
-        # API.positions
+    def run 
+        puts "▒█░░▒█ █▀▀ █░░ █▀▀ █▀▀█ █▀▄▀█ █▀▀ 　 ▀▀█▀▀ █▀▀█ 　 ▒█▀▀█ ░▀░ ▀▀█▀▀ █░░█ █░░█ █▀▀▄ 　 ░░░▒█ █▀▀█ █▀▀▄ █▀▀ █".colorize(:light_blue)
+        puts "▒█▒█▒█ █▀▀ █░░ █░░ █░░█ █░▀░█ █▀▀ 　 ░░█░░ █░░█ 　 ▒█░▄▄ ▀█▀ ░░█░░ █▀▀█ █░░█ █▀▀▄ 　 ░▄░▒█ █░░█ █▀▀▄ ▀▀█ ▀".colorize(:light_blue)
+        puts "▒█▄▀▄█ ▀▀▀ ▀▀▀ ▀▀▀ ▀▀▀▀ ▀░░░▀ ▀▀▀ 　 ░░▀░░ ▀▀▀▀ 　 ▒█▄▄█ ▀▀▀ ░░▀░░ ▀░░▀ ░▀▀▀ ▀▀▀░ 　 ▒█▄▄█ ▀▀▀▀ ▀▀▀░ ▀▀▀ ▄".colorize(:light_blue)
+        puts ""
+        puts "          There are so many positions and can be overwhelming. How about we narrow it down!"
         menu
     end
 
-    def list_position
-        Position.all.each.with_index(1) { | position, i | puts "#{i}. #{position.title}" }
-    end
-
-    def display_position_details(position)
-        puts ""
-        puts "Here are the details for #{position.title}:"
-        puts ""
-        puts "COMPANY: #{position.company}"
-        puts ""
-        puts "LOCATION: #{position.location}"
-        puts ""
-        puts "DESCRIPTION: #{Nokogiri::HTML(position.description).xpath("//text()").text.gsub("Description", "")}"  
-    end
-
     def menu
-        puts "Type 'location' or 'description' to narrow down your search."
+        puts "                        Type 'location' or 'description' to narrow down your search."
         puts ""
 
         input = gets.strip.downcase
-        if input == 'location'
-            puts ""
-            puts "Input an area."
-            puts ""
-            puts "1. North America"
-            puts "2. South America"
-            puts "3. Europe"
-            puts "4. Asia"
-            puts "5. Australia"
-            puts ""
-            
-            term = gets.strip.downcase
-            API.position_location("#{term}")
-            list_position
-            puts ""
-            puts "Please select a number to get the details."
-            input = gets.chomp
-            if !input.to_i.between?(1, Position.all.count)
-                puts "Position not found. Please select a different position!"
-                list_position
-            else
-                position = Position.all[input.to_i-1]
-                display_position_details(position)
-                add_cart(position)
-                see_more
-            end
-            
-        elsif input == 'description'
-            puts "Input a language."
-            puts ""
-            puts "1. Javascript"
-            puts "2. Node"
-            puts "3. React"
-            puts "4. Ruby"
-            puts "5. Python"
-            puts "6. Java"
-            puts ""
+        
+        if input == "location"
+            location_paramater
+        elsif input == "description"
+            description_parameter
+        else
+            puts "Wrong input, try again!".colorize(:red)
+            menu
+        end
 
-            term = gets.strip.downcase
-            API.positions_description(term)
-            list_position
+        display_position_details
+        add_cart
+        see_more
+    end
 
-            puts ""
-            puts "Please select a number to get the details."
-            input = gets.chomp
-            puts ""
-            if !input.to_i.between?(1, Position.all.count)
-                puts "Position not found. Please select a different position!"
-                list_position
-            else
-                position = Position.all[input.to_i-1]
-                display_position_details(position)
-                add_cart(position)
-                see_more
-            end
+    def location_paramater
+        puts ""
+        puts"▀█▀ █▀▀▄ █▀▀█ █░░█ ▀▀█▀▀ 　 █▀▀█ 　 █░░ █▀▀█ █▀▀ █▀▀█ ▀▀█▀▀ ░▀░ █▀▀█ █▀▀▄ ░".colorize(:light_blue)
+        puts"▒█░ █░░█ █░░█ █░░█ ░░█░░ 　 █▄▄█ 　 █░░ █░░█ █░░ █▄▄█ ░░█░░ ▀█▀ █░░█ █░░█ ▄".colorize(:light_blue)
+        puts"▄█▄ ▀░░▀ █▀▀▀ ░▀▀▀ ░░▀░░ 　 ▀░░▀ 　 ▀▀▀ ▀▀▀▀ ▀▀▀ ▀░░▀ ░░▀░░ ▀▀▀ ▀▀▀▀ ▀░░▀ █".colorize(:light_blue)
+        puts""
+        $locations.collect.with_index(1) { | location, i | puts "#{i}. #{location}" }
+        puts ""
+
+        $location_selected = gets.strip.split.map(&:capitalize).join(' ')
+        binding.pry
+        if $locations.include?($location_selected) 
+            $list = API.position_location($location_selected)
+            list_position
+        else
+            puts "Wrong input, Try again!".colorize(:red)
+            location_paramater
         end
     end
 
+    def  description_parameter
+        puts ""
+        puts "▀█▀ █▀▀▄ █▀▀█ █░░█ ▀▀█▀▀ 　 █▀▀█ 　 █░░ █▀▀█ █▀▀▄ █▀▀▀ █░░█ █▀▀█ █▀▀▀ █▀▀ ░".colorize(:light_blue)
+        puts "▒█░ █░░█ █░░█ █░░█ ░░█░░ 　 █▄▄█ 　 █░░ █▄▄█ █░░█ █░▀█ █░░█ █▄▄█ █░▀█ █▀▀ ▄ ".colorize(:light_blue)
+        puts "▄█▄ ▀░░▀ █▀▀▀ ░▀▀▀ ░░▀░░ 　 ▀░░▀ 　 ▀▀▀ ▀░░▀ ▀░░▀ ▀▀▀▀ ░▀▀▀ ▀░░▀ ▀▀▀▀ ▀▀▀ █".colorize(:light_blue)
+        puts ""
+        $languages.each.with_index(1) { | language, i | puts "#{i}. #{language}" }
+        puts ""
+
+        $description_selected = gets.strip.capitalize!
+        if $languages.include?($description_selected) 
+            $list = API.positions_description($description_selected)
+            list_position
+        else
+            puts ""
+            puts "Wrong input!".colorize(:red)
+            description_parameter
+        end
+    end
+
+    def list_position
+        binding.pry
+        if $list == [] && $location_selected == 'nowhere'
+            puts "Seems like there is no #{$description_selected} positions. Try Again!".colorize(:red)
+            description_parameter
+        elsif $list == [] && $description_selected = "none"
+            puts "Seems like there is no positions in #{$location_selected.capitalize!}. Try Again!".colorize(:red)
+            location_paramater
+        end
+
+        puts ""
+        puts"▒█▀▀▀█ █▀▀ █░░ █▀▀ █▀▀ ▀▀█▀▀ 　 █▀▀█ 　 █▀▀▄ █░░█ █▀▄▀█ █▀▀▄ █▀▀ █▀▀█ ░".colorize(:light_blue)
+        puts"░▀▀▀▄▄ █▀▀ █░░ █▀▀ █░░ ░░█░░ 　 █▄▄█ 　 █░░█ █░░█ █░▀░█ █▀▀▄ █▀▀ █▄▄▀ ▄".colorize(:light_blue)
+        puts"▒█▄▄▄█ ▀▀▀ ▀▀▀ ▀▀▀ ▀▀▀ ░░▀░░ 　 ▀░░▀ 　 ▀░░▀ ░▀▀▀ ▀░░░▀ ▀▀▀░ ▀▀▀ ▀░▀▀ █".colorize(:light_blue)
+        puts ""
+        $list.each.with_index(1) { | position, i | puts "#{i}. #{position.title}" }
+        puts""
+
+        input = gets.chomp
+
+        if !input.to_i.between?(1, $list.count)
+            puts "Position not found. Please select a different position!".colorize(:red)
+            list_position
+        else
+            $select_job = $list[input.to_i-1]
+        end
+    end
+
+    def display_position_details
+        puts ""
+        puts "Here are the details for #{$select_job.title}:".colorize(:light_blue)
+        puts ""
+        puts "COMPANY: #{$select_job.company}"
+        puts ""
+        puts "LOCATION: #{$select_job.location}"
+        puts ""
+        puts "DESCRIPTION: #{Nokogiri::HTML($select_job.description).xpath("//text()").text.gsub("Description", "")}" 
+    end
+
+
     def see_more
         puts ""
-        puts "Would you like to see more positions?"
-        puts "Please enter Y or N"
-        puts "To see your cart enter C"
+        puts "Would you like to see more positions? Enter Y or N".colorize(:light_cyan)
+        puts "Enter C for cart.".colorize(:light_cyan)
         puts ""
 
         another_character = gets.strip.downcase
         if another_character == "y"
             menu
         elsif another_character == "n"
+            puts"▀▀█▀▀ █░░█ █▀▀█ █▀▀▄ █░█ 　 █░░█ █▀▀█ █░░█ 　 █▀▀ █▀▀█ █▀▀█ 　 █▀▀ █░█ █▀▀█ █░░ █▀▀█ █▀▀█ ░▀░ █▀▀▄ █▀▀▀".colorize(:blue)
+            puts"░▒█░░ █▀▀█ █▄▄█ █░░█ █▀▄ 　 █▄▄█ █░░█ █░░█ 　 █▀▀ █░░█ █▄▄▀ 　 █▀▀ ▄▀▄ █░░█ █░░ █░░█ █▄▄▀ ▀█▀ █░░█ █░▀█".colorize(:blue) 
+            puts"░▒█░░ ▀░░▀ ▀░░▀ ▀░░▀ ▀░▀ 　 ▄▄▄█ ▀▀▀▀ ░▀▀▀ 　 ▀░░ ▀▀▀▀ ▀░▀▀ 　 ▀▀▀ ▀░▀ █▀▀▀ ▀▀▀ ▀▀▀▀ ▀░▀▀ ▀▀▀ ▀░░▀ ▀▀▀▀".colorize(:blue)
+            puts""
+            puts"▒█▀▀█ ░▀░ ▀▀█▀▀ ▒█░▒█ █░░█ █▀▀▄ 　 ░░░▒█ █▀▀█ █▀▀▄ █▀▀ █ 　 ▒█▀▀▀█ █▀▀ █▀▀ 　 █░░█ █▀▀█ █░░█ 　 █▀▀▄ █▀▀ █░█ ▀▀█▀▀".colorize(:blue)
+            puts"▒█░▄▄ ▀█▀ ░░█░░ ▒█▀▀█ █░░█ █▀▀▄ 　 ░▄░▒█ █░░█ █▀▀▄ ▀▀█ ▀ 　 ░▀▀▀▄▄ █▀▀ █▀▀ 　 █▄▄█ █░░█ █░░█ 　 █░░█ █▀▀ ▄▀▄ ░░█░░".colorize(:blue)
+            puts"▒█▄▄█ ▀▀▀ ░░▀░░ ▒█░▒█ ░▀▀▀ ▀▀▀░ 　 ▒█▄▄█ ▀▀▀▀ ▀▀▀░ ▀▀▀ ▄ 　 ▒█▄▄▄█ ▀▀▀ ▀▀▀ 　 ▄▄▄█ ▀▀▀▀ ░▀▀▀ 　 ▀░░▀ ▀▀▀ ▀░▀ ░░▀░░".colorize(:blue)
+            puts""
+            puts"▀▀█▀▀ ░▀░ █▀▄▀█ █▀▀ █".colorize(:blue)
+            puts"░░█░░ ▀█▀ █░▀░█ █▀▀ ▀".colorize(:blue)
+            puts"░░▀░░ ▀▀▀ ▀░░░▀ ▀▀▀ ▄".colorize(:blue)
             exit
         elsif another_character == 'c'
             see_cart
+        else 
+            puts "Wrong input try again!".colorize(:red)
+            see_more
         end
     end
 
-    def add_cart(position)
+    def add_cart
         puts ""
-        puts "Would you like to add this to your cart?"
-        puts "Please enter Y or N"
+        puts "Would you like to add this to your cart? Enter Y or N".colorize(:light_cyan)
         puts ""
 
         another_character = gets.strip.downcase
         if another_character == "y"
-            Cart.new(position)
+            Cart.new($select_job)
+            see_more
+        elsif another_character == "n"
             see_more
         else 
-            see_more
+            puts "Wrong input try again!".colorize(:red)
+            add_cart
         end 
     end
 
-    def list_cart
-        Cart.all.each.with_index(1) { | position, i | puts "#{i}. #{position.title}" }
-    end
+    def see_cart
+        puts ""     
+        puts "▒█░░▒█ █▀▀ █░░ █▀▀ █▀▀█ █▀▄▀█ █▀▀ 　 ▀▀█▀▀ █▀▀█ 　 █░░█ █▀▀█ █░░█ █▀▀█ 　 █▀▀ █▀▀█ █▀▀█ ▀▀█▀▀ █".colorize(:light_blue)
+        puts "▒█▒█▒█ █▀▀ █░░ █░░ █░░█ █░▀░█ █▀▀ 　 ░░█░░ █░░█ 　 █▄▄█ █░░█ █░░█ █▄▄▀ 　 █░░ █▄▄█ █▄▄▀ ░░█░░ ▀".colorize(:light_blue)
+        puts "▒█▄▀▄█ ▀▀▀ ▀▀▀ ▀▀▀ ▀▀▀▀ ▀░░░▀ ▀▀▀ 　 ░░▀░░ ▀▀▀▀ 　 ▄▄▄█ ▀▀▀▀ ░▀▀▀ ▀░▀▀ 　 ▀▀▀ ▀░░▀ ▀░▀▀ ░░▀░░ ▄".colorize(:light_blue)
+        puts""
+        list_cart = Cart.all.each.with_index(1) { | position, i | puts "#{i}. #{position.title}" }
+        puts ""
+        puts "If you would like to apply for a position select a number. To go back to menu type M.".colorize(:light_cyan)
+        puts ""
 
-    def see_cart()
-        puts "Welcome to your cart!"
-        list_cart
-        puts ""
-        puts "If you would like to apply for a position select a number."
-        puts ""
         input = gets.chomp
-        if !input.to_i.between?(1, Cart.all.count)
-            puts "Position not found. Please select a different position!"
-            list_cart
+        if input.downcase == "m"
+            menu
+        elsif !input.to_i.between?(1, Cart.all.count)
+            puts "Position not found. Please select a different position!".colorize(:red)
+            see_cart
         else
             position = Cart.all[input.to_i-1]
             puts "To apply for #{position.title}."
-            puts "Please go to the following url: #{position.url}"
             puts ""
-            puts "Would you like to go back to the cart? Y or N"
+            doc = Nokogiri::HTML(open(position.url))
+            doc.css("div.highlighted div.inner").each { |position| puts "Use this URL: #{position.css('a').attr('href').value}" }
+
+            puts ""
+            puts "Would you like to go back to the cart? Y or N".colorize(:light_cyan)
             puts ""
             another_character = gets.strip.downcase
             if another_character == "y"
-                list_cart
-            else 
+                see_cart
+            elsif another_character == "n" 
                 see_more
+            else 
+                puts "Wrong input, try again!".colorize(:red)
             end
         end
     end

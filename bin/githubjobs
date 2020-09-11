@@ -3,7 +3,9 @@
 require 'rest-client'
 require 'json'
 require 'pry'
+require 'open-uri'
 require "nokogiri"
+require 'colorize'
 
 require_relative '../lib/api'
 require_relative '../lib/position'

@@ -8,5 +8,4 @@ class Cart
     def self.all
         @@all 
     end
-
 end
